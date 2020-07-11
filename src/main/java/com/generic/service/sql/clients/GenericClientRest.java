@@ -1,4 +1,4 @@
-package com.springboot.app.commons.clients;
+package com.generic.service.sql.clients;
 
 import java.awt.print.Pageable;
 import java.util.List;

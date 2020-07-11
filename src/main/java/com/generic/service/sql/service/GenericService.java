@@ -1,4 +1,4 @@
-package com.springboot.app.commons.service;
+package com.generic.service.sql.service;
 
 import java.util.List;
 

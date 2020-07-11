@@ -1,4 +1,4 @@
-package com.springboot.app.commons.models;
+package com.generic.service.sql.models;
 
 import java.util.Date;
 
@@ -25,13 +25,13 @@ import lombok.ToString;
 @EntityListeners(AuditingEntityListener.class)
 //si los borro.. tengo que borrar la dependencia de jackson del pom.xml
 @JsonIgnoreProperties(value = { "createdAt", "updatedAt" }, allowGetters = true)
-public abstract class DateAuditNoSql<ID> extends ModelNoSql<ID> {
+public abstract class DateAudit<ID> extends Model<ID> {
 
-	public DateAuditNoSql() {
+	public DateAudit() {
 		super();
 	}
 
-	public DateAuditNoSql(ID modelId) {
+	public DateAudit(ID modelId) {
 		super(modelId);
 	}
 

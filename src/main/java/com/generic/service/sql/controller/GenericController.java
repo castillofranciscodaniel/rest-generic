@@ -1,4 +1,4 @@
-package com.springboot.app.commons.controller;
+package com.generic.service.sql.controller;
 
 import java.util.List;
 
@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.springboot.app.commons.models.Model;
-import com.springboot.app.commons.models.util.ErrorBody;
-import com.springboot.app.commons.service.GenericService;
-import com.springboot.app.commons.service.ResourceNotFoundException;
+import com.generic.service.sql.models.Model;
+import com.generic.service.sql.models.util.ErrorBody;
+import com.generic.service.sql.service.GenericService;
+import com.generic.service.sql.service.ResourceNotFoundException;
 
 public abstract class GenericController<T extends Model<ID>, ID> {
 
@@ -32,6 +32,8 @@ public abstract class GenericController<T extends Model<ID>, ID> {
 
 	@GetMapping(name = "list")
 	public ResponseEntity<Page<T>> list(Pageable pageable) {
+
+		Page<T> tList = this.genericService.findAll(pageable);
 		return ResponseEntity.ok(this.genericService.findAll(pageable));
 	}
 

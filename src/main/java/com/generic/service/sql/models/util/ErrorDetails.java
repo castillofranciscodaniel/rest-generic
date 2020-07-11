@@ -1,4 +1,4 @@
-package com.springboot.app.commons.models.util;
+package com.generic.service.sql.models.util;
 
 import java.util.Date;
 

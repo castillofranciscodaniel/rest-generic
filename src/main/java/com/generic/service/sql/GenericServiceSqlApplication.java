@@ -1,4 +1,4 @@
-package com.springboot.app.commons;
+package com.generic.service.sql;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,5 +10,5 @@ import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 // para que la dependencia de spring-boot-jpa no nos pida configurar una BD
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class, MongoAutoConfiguration.class, 
 	    MongoDataAutoConfiguration.class })
-public class SpringbootServiceCommonsApplication {
+public class GenericServiceSqlApplication {
 }

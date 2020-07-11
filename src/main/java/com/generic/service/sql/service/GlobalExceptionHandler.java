@@ -1,4 +1,4 @@
-package com.springboot.app.commons.service;
+package com.generic.service.sql.service;
 
 import java.util.Date;
 
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
-import com.springboot.app.commons.models.util.ErrorDetails;
+import com.generic.service.sql.models.util.ErrorDetails;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {

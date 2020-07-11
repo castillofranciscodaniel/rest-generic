@@ -1,4 +1,4 @@
-package com.springboot.app.commons.models;
+package com.generic.service.sql.models;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
@@ -17,13 +17,13 @@ import lombok.Setter;
 @Setter
 @MappedSuperclass
 @JsonIgnoreProperties(value = { "createdBy", "updatedBy" }, allowGetters = true)
-public abstract class UserAuditNoSql<ID> extends ModelNoSql<ID> {
+public abstract class UserAudit<ID> extends Model<ID> {
 
-	public UserAuditNoSql() {
+	public UserAudit() {
 		super();
 	}
 
-	public UserAuditNoSql(ID modelId) {
+	public UserAudit(ID modelId) {
 		super(modelId);
 	}
 
