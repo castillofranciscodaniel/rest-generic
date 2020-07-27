@@ -1,7 +1,9 @@
-package com.generic.service.sql.controller;
+package com.generic.service.sql.web;
 
 import java.util.List;
+import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.data.domain.Page;
@@ -16,18 +18,35 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import com.generic.service.sql.models.Model;
 import com.generic.service.sql.models.util.ErrorBody;
 import com.generic.service.sql.service.GenericService;
 import com.generic.service.sql.service.ResourceNotFoundException;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+
 public abstract class GenericController<T extends Model<ID>, ID> {
+	
+	private final String HEADER = "Authorization";
+	private final String PREFIX = "Bearer ";
+	private final String SECRET = "mySecretKey";
+
 
 	private GenericService<T, ID> genericService;
+	
+	private Boolean auditoriaEnabled;
 
 	public GenericController(GenericService<T, ID> genericService) {
+		this.auditoriaEnabled = false;
 		this.genericService = genericService;
+	}
+	
+	public GenericController(GenericService<T, ID> genericService, Boolean auditoriaEnabled) {
+		this.genericService = genericService;
+		this.auditoriaEnabled = auditoriaEnabled;
 	}
 
 	@GetMapping(name = "list")
@@ -43,7 +62,12 @@ public abstract class GenericController<T extends Model<ID>, ID> {
 	}
 
 	@GetMapping(name = "findById", path = "{id}")
-	public ResponseEntity<?> findById(@PathVariable("id") ID id) throws Exception {
+	public ResponseEntity<?> findById(@PathVariable("id") ID id, @RequestHeader Map<String, String> headers) throws Exception {
+		if(this.auditoriaEnabled) {
+			if(headers.containsKey("Authorization")) {
+				String token = headers.get("Authorization");
+			}
+		}
 		T t = this.genericService.findById(id);
 		if (t == null) {
 			return ResponseEntity.notFound().build();
@@ -149,6 +173,19 @@ public abstract class GenericController<T extends Model<ID>, ID> {
 
 		this.genericService.deleteAll(listT);
 		return ResponseEntity.ok().build();
+	}
+	
+	private Claims validateToken(HttpServletRequest request) {
+		String jwtToken = request.getHeader(HEADER).replace(PREFIX, "");
+		return Jwts.parser().setSigningKey(SECRET.getBytes()).parseClaimsJws(jwtToken).getBody();
+	}
+	
+	private void setUpSpringAuthentication(Claims claims) {
+		@SuppressWarnings("unchecked")
+		List<String> authorities = (List<String>) claims.get("authorities");
+		
+		Long userId =  (Long) claims.get("userId");
+
 	}
 
 }
