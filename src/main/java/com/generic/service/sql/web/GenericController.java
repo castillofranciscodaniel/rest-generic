@@ -59,13 +59,16 @@ public abstract class GenericController<T extends Model<ID>, ID> {
 		return ResponseEntity.ok(this.genericService.findAll());
 	}
 
+	@SuppressWarnings("unchecked")
 	@GetMapping(name = "findById", path = "{id}")
 	public ResponseEntity<?> findById(@PathVariable("id") ID id, @RequestHeader Map<String, String> headers)
 			throws Exception {
 		this.setUserIdAndRoles(headers, id);
 		T t = this.genericService.findById(id);
-
+		
 		UserAudit<ID> userAudit = (UserAudit<ID>) t;
+		userAudit.getCreatedBy(); // con eso podemos validar todo tranqui
+		
 		if (t == null) {
 			return ResponseEntity.notFound().build();
 		}
