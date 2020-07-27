@@ -2,8 +2,9 @@ package com.generic.service.sql;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 @SpringBootApplication
-@EnableAutoConfiguration
+@EnableAutoConfiguration(exclude =  DataSourceAutoConfiguration.class )
 public class GenericServiceSqlApplication {
 }

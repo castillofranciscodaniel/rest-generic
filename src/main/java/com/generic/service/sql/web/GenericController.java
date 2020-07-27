@@ -2,8 +2,8 @@ package com.generic.service.sql.web;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.data.domain.Page;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 import com.generic.service.sql.models.Model;
+import com.generic.service.sql.models.UserAudit;
 import com.generic.service.sql.models.util.ErrorBody;
 import com.generic.service.sql.service.GenericService;
 import com.generic.service.sql.service.ResourceNotFoundException;
@@ -29,24 +30,21 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 
 public abstract class GenericController<T extends Model<ID>, ID> {
-	
-	private final String HEADER = "Authorization";
-	private final String PREFIX = "Bearer ";
-	private final String SECRET = "mySecretKey";
 
-
+	private final String HEADER_AUTH = "authorization";
+	private final String PREFIX_BEARER = "Bearer ";
 	private GenericService<T, ID> genericService;
-	
-	private Boolean auditoriaEnabled;
+	private Optional<String> jwtKey;
+	private List<String> authorities;
+	private ID userId;
 
 	public GenericController(GenericService<T, ID> genericService) {
-		this.auditoriaEnabled = false;
 		this.genericService = genericService;
 	}
-	
-	public GenericController(GenericService<T, ID> genericService, Boolean auditoriaEnabled) {
+
+	public GenericController(GenericService<T, ID> genericService, Optional<String> jwtKey) {
 		this.genericService = genericService;
-		this.auditoriaEnabled = auditoriaEnabled;
+		this.jwtKey = jwtKey;
 	}
 
 	@GetMapping(name = "list")
@@ -62,13 +60,12 @@ public abstract class GenericController<T extends Model<ID>, ID> {
 	}
 
 	@GetMapping(name = "findById", path = "{id}")
-	public ResponseEntity<?> findById(@PathVariable("id") ID id, @RequestHeader Map<String, String> headers) throws Exception {
-		if(this.auditoriaEnabled) {
-			if(headers.containsKey("Authorization")) {
-				String token = headers.get("Authorization");
-			}
-		}
+	public ResponseEntity<?> findById(@PathVariable("id") ID id, @RequestHeader Map<String, String> headers)
+			throws Exception {
+		this.setUserIdAndRoles(headers, id);
 		T t = this.genericService.findById(id);
+
+		UserAudit<ID> userAudit = (UserAudit<ID>) t;
 		if (t == null) {
 			return ResponseEntity.notFound().build();
 		}
@@ -175,17 +172,42 @@ public abstract class GenericController<T extends Model<ID>, ID> {
 		return ResponseEntity.ok().build();
 	}
 	
-	private Claims validateToken(HttpServletRequest request) {
-		String jwtToken = request.getHeader(HEADER).replace(PREFIX, "");
-		return Jwts.parser().setSigningKey(SECRET.getBytes()).parseClaimsJws(jwtToken).getBody();
-	}
-	
-	private void setUpSpringAuthentication(Claims claims) {
-		@SuppressWarnings("unchecked")
-		List<String> authorities = (List<String>) claims.get("authorities");
+	private Boolean isSuperOrIdOK(Map<String, String> headers, ID userId) {
 		
-		Long userId =  (Long) claims.get("userId");
+		this.setUserIdAndRoles(headers, userId);
+		
+		List<String> superUsers = List.of("ROLE_DEVELOPER", "ROLE_SUPER_ADMIN");
+		
+		for (int i = 0; i < this.authorities.size(); i++) {
+			for (int j = 0; j < superUsers.size(); j++) {
+				if(authorities.get(i).equals(superUsers.get(j))) {
+					return true;
+				}
+				
+			}
+		}
+		return false;
+	}
 
+	private void setUserIdAndRoles(Map<String, String> headers, ID userID) {
+		if (this.jwtKey.isPresent()) {
+			if (headers.containsKey(HEADER_AUTH)) {
+				String tokenBearer = headers.get(HEADER_AUTH);
+				Claims claims = this.getClaimsFromToken(tokenBearer);
+				this.setUpSpringAuthentication(claims);
+			}
+		}
+	}
+
+	private Claims getClaimsFromToken(String tokenBearer) {
+		String jwtToken = tokenBearer.replace(PREFIX_BEARER, "");
+		return Jwts.parser().setSigningKey(this.jwtKey.get().getBytes()).parseClaimsJws(jwtToken).getBody();
+	}
+
+	@SuppressWarnings("unchecked")
+	private void setUpSpringAuthentication(Claims claims) {
+		this.authorities = (List<String>) claims.get("authorities");
+		this.userId = (ID)(claims.get("userId").toString());
 	}
 
 }
